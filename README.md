@@ -158,7 +158,7 @@ Visit [http://localhost:5000](http://localhost:5000)
 
 ## 🧠 Author
 
-Built by \[Md Tanvir Rana], powered by local AI models.
+Built by Md Tanvir Rana, powered by local AI models.
 
 ---
 
