@@ -1,6 +1,8 @@
 import sqlite3
+from rich.console import Console
+from rich.table import Table
 
-print("⭐ Top 10 Job Matches (TE-palvelut only):\n")
+console = Console()
 
 con = sqlite3.connect("data/jobs.db")
 cur = con.cursor()
@@ -12,8 +14,17 @@ rows = cur.execute("""
     ORDER BY score DESC 
     LIMIT 10
 """).fetchall()
-
-for title, score in rows:
-    print(f"⭐ {score}/10 — {title}")
-
 con.close()
+
+if not rows:
+    console.print("[yellow]⚠️ No scored jobs found.[/yellow]")
+else:
+    table = Table(title="⭐ Top 10 Job Matches (TE-palvelut Only)", show_lines=True)
+    table.add_column("Rank", justify="center", style="cyan")
+    table.add_column("Job Title", style="green")
+    table.add_column("Score", justify="center", style="bold yellow")
+
+    for i, (title, score) in enumerate(rows, 1):
+        table.add_row(str(i), title, f"{score}/10")
+
+    console.print(table)

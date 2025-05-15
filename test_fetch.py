@@ -2,18 +2,24 @@ from connectors.te_palvelut import fetch_te
 # from connectors.duunitori import fetch_duunitori
 # from connectors.laura import fetch_laura
 
+from rich.console import Console
+from rich.markdown import Markdown
+from rich.panel import Panel
+
+console = Console()
+
 keywords = ["cybersecurity", "python"]
 
-print("🚀 Starting job fetch (TE-palvelut only)...\n")
+console.print(Panel("🚀 [bold green]Starting job fetch (TE-palvelut only)...[/bold green]", expand=False))
 
 for kw in keywords:
-    print(f"🔎 Searching for keyword: {kw}\n")
+    console.print(f"\n🔎 [cyan]Fetching jobs for keyword:[/cyan] [bold]{kw}[/bold]")
     
     # Future sources:
     # fetch_duunitori(kw)
     fetch_te(kw)
     # fetch_laura(kw)
 
-    print("-" * 40 + "\n")
+    console.rule(f"[green]✔ Done fetching for: {kw}")
 
-print("✅ Fetching complete! Check data/jobs.db for results.")
+console.print("\n✅ [bold green]Fetching complete![/bold green] Check [italic]data/jobs.db[/italic] for results.")

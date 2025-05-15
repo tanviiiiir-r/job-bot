@@ -4,10 +4,15 @@ import json
 import re
 from dotenv import load_dotenv
 from ollama import Client
+from rich.console import Console
+from rich.table import Table
+from rich.progress import track
 
 # 🧠 Load environment variables
 load_dotenv()
 client = Client(host='http://localhost:11434')
+
+console = Console()
 
 # 🧠 Your skillset (customize this as needed)
 YOUR_SKILLS = """
@@ -39,19 +44,19 @@ JOB DESCRIPTION:
             messages=[{"role": "user", "content": prompt}]
         )
         content = response['message']['content'].strip()
-        print("📨 Ollama raw reply:", repr(content))
+        console.log(f"[bold blue]📨 Ollama raw reply:[/bold blue] {repr(content)}")
 
         match = re.search(r"\b(10|[0-9])\b", content)
         if match:
             score = int(match.group(0))
-            print(f"🎯 Extracted score: {score}")
+            console.log(f"[green]🎯 Extracted score: {score}[/green]")
             return score
         else:
-            print("⚠️ No valid number found in response.")
+            console.log("[yellow]⚠️ No valid number found in response.[/yellow]")
             return None
 
     except Exception as e:
-        print("❌ Ollama scoring error:", e)
+        console.log(f"[red]❌ Ollama scoring error:[/red] {e}")
         return None
 
 # 🧠 Score only TE-palvelut jobs that are unscored
@@ -61,25 +66,28 @@ def score_te_only():
     cur.execute("SELECT id, raw FROM jobs WHERE score IS NULL AND source = 'te'")
     rows = cur.fetchall()
 
-    print(f"\n🔍 Found {len(rows)} unscored TE-palvelut jobs.\n")
+    if not rows:
+        console.print("[green]✅ All TE jobs are already scored.[/green]")
+        return
 
-    for job_id, raw_json in rows:
+    console.print(f"\n[bold cyan]🔍 Found {len(rows)} unscored TE-palvelut jobs[/bold cyan]\n")
+
+    for job_id, raw_json in track(rows, description="🧠 Scoring jobs..."):
         try:
-            print(f"🔄 Scoring job ID {job_id}")
             job = json.loads(raw_json)
             desc = job.get("description", "")
             score = score_job_text(desc)
             if score is not None:
                 cur.execute("UPDATE jobs SET score = ? WHERE id = ?", (score, job_id))
-                print(f"💾 Saved score {score} for job ID {job_id} ({job.get('title')[:50]})")
+                console.print(f"[green]💾 Saved score {score} for job:[/green] {job.get('title', 'N/A')[:60]}")
             else:
-                print(f"⚠️ Skipped job {job_id} due to invalid score.")
+                console.print(f"[yellow]⚠️ Skipped job {job_id} due to invalid score[/yellow]")
         except Exception as e:
-            print(f"❌ Error scoring job {job_id}:", e)
+            console.print(f"[red]❌ Error scoring job {job_id}:[/red] {e}")
 
     con.commit()
     con.close()
-    print("\n✅ Done scoring TE-palvelut jobs.\n")
+    console.print("\n[bold green]✅ Done scoring TE-palvelut jobs.[/bold green]")
 
 # ✅ Trigger scoring when script is run
 if __name__ == "__main__":
