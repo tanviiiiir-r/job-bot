@@ -1,12 +1,39 @@
 import os
-from dotenv import load_dotenv
-import base64
+import json
+from datetime import datetime
+from utils.db import get_db
 
-load_dotenv()
+def fetch_te(keyword: str):
+    print(f"🔍 Searching TE-palvelut for: {keyword}")
+    # Mock-safe example
+    jobs = []
+    for i in range(1, 6):
+        job = {
+            "id": f"te-{keyword[:3]}-{i}",
+            "title": f"[TE] Mock Job {i} – {keyword.title()}",
+            "company": f"TE Services Finland",
+            "description": f"Sample description for TE job about {keyword}",
+            "url": f"https://te-palvelut.fi/mock/{keyword}/{i}"
+        }
+        print(f"📄 {job['title']} ({job['url']})")
+        jobs.append(job)
 
-username = os.getenv("TE_API_USER", "")
-password = os.getenv("TE_API_PASS", "")
+    con = get_db()
+    cur = con.cursor()
+    fetched_at = datetime.utcnow().isoformat()
 
-def get_auth_header():
-    auth = base64.b64encode(f"{username}:{password}".encode()).decode()
-    return {"Authorization": f"Basic {auth}"}
+    for job in jobs:
+        cur.execute("""
+            INSERT OR REPLACE INTO jobs (id, title, url, source, fetched, raw)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+            job["id"],
+            job["title"],
+            job["url"],
+            "te-palvelut",
+            fetched_at,
+            json.dumps(job)
+        ))
+
+    con.commit()
+    print(f"✅ Saved {len(jobs)} TE-palvelut jobs for '{keyword}' into database.\n")
