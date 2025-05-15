@@ -83,7 +83,7 @@ job-bot/
 ### 1. Clone & Setup
 
 ```bash
-git clone https://github.com/yourname/job-bot.git
+git clone https://github.com/tanviiiiir-r/job-bot.git
 cd job-bot
 python3 -m venv venv
 source venv/bin/activate
@@ -158,7 +158,7 @@ Visit [http://localhost:5000](http://localhost:5000)
 
 ## 🧠 Author
 
-Built with ❤️ by \[Your Name], powered by local AI models.
+Built by \[Md Tanvir Rana], powered by local AI models.
 
 ---
 
