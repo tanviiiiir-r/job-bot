@@ -1,3 +1,5 @@
+[![CI](https://github.com/tanviiiiir-r/job-bot/actions/workflows/ci.yml/badge.svg)]
+
 # job-bot
 
 Brief overview of job-bot
